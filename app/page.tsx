@@ -5,10 +5,78 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ── Cherry Blossom Canvas ────────────────────────────────────────────
 function CherryBlossoms() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const petalRef = useRef<HTMLCanvasElement>(null);
+  const branchRef = useRef<HTMLCanvasElement>(null);
 
+  // ── Branch drawing ──────────────────────────────────────────────
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = branchRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    type Seg = { x1: number; y1: number; x2: number; y2: number; w: number; a: number };
+
+    const draw = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      const W = canvas.width, H = canvas.height;
+      const segs: Seg[] = [];
+
+      const rnd = (min: number, max: number) => min + Math.random() * (max - min);
+
+      function branch(x: number, y: number, angle: number, len: number, w: number, depth: number) {
+        if (w < 0.35 || depth > 10) return;
+        const wobble = (Math.random() - 0.5) * 0.28;
+        const ex = x + Math.cos(angle + wobble) * len;
+        const ey = y + Math.sin(angle + wobble) * len;
+        segs.push({ x1: x, y1: y, x2: ex, y2: ey, w, a: Math.min(0.9, w * 0.09 + 0.22) });
+        const kids = Math.random() < 0.3 ? 3 : 2;
+        for (let i = 0; i < kids; i++) {
+          const side = i === 0 ? -1 : i === 1 ? 1 : (Math.random() < 0.5 ? -1 : 1);
+          const spread = rnd(0.22, 0.55) * side;
+          branch(ex, ey, angle + spread, len * rnd(0.52, 0.72), w * rnd(0.52, 0.65), depth + 1);
+        }
+      }
+
+      // top-left corner — 2 trees
+      branch(0,  0,  rnd(0.3, 0.55),  rnd(120,150), rnd(11,14), 0);
+      branch(15, 0,  rnd(0.55, 0.8),  rnd(90,120),  rnd(7,10),  0);
+      // top-right corner — 2 trees
+      branch(W,  0,  Math.PI - rnd(0.3,0.55), rnd(120,150), rnd(11,14), 0);
+      branch(W-15,0, Math.PI - rnd(0.55,0.8), rnd(90,120),  rnd(7,10),  0);
+      // top center — 1 tree hanging down
+      branch(W*0.5, 0, Math.PI*0.5, rnd(80,110), rnd(6,9), 0);
+      // left side — 3 branches upper half
+      branch(0, H*0.12, rnd(0.0,0.25),  rnd(80,110), rnd(6,9),  0);
+      branch(0, H*0.28, rnd(-0.1,0.15), rnd(60,90),  rnd(4,7),  0);
+      branch(0, H*0.42, rnd(-0.05,0.1), rnd(50,70),  rnd(3,5),  0);
+      // right side — 3 branches upper half
+      branch(W, H*0.12, Math.PI - rnd(0.0,0.25),  rnd(80,110), rnd(6,9),  0);
+      branch(W, H*0.28, Math.PI - rnd(-0.1,0.15), rnd(60,90),  rnd(4,7),  0);
+      branch(W, H*0.42, Math.PI - rnd(-0.05,0.1), rnd(50,70),  rnd(3,5),  0);
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (const s of segs) {
+        ctx.beginPath();
+        ctx.moveTo(s.x1, s.y1);
+        ctx.lineTo(s.x2, s.y2);
+        ctx.lineWidth = s.w;
+        ctx.strokeStyle = `rgba(12, 6, 3, ${s.a})`;
+        ctx.stroke();
+      }
+    };
+
+    draw();
+    window.addEventListener("resize", draw);
+    return () => window.removeEventListener("resize", draw);
+  }, []);
+
+  // ── Petal animation ─────────────────────────────────────────────
+  useEffect(() => {
+    const canvas = petalRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -20,12 +88,17 @@ function CherryBlossoms() {
     resize();
     window.addEventListener("resize", resize);
 
-    const makePetal = () => ({
+    let spawnDir = -1;
+    let windTimer = 0;
+    const WIND_INTERVAL = 900; // frames — slow interval (~15s at 60fps)
+
+    const makePetal = (spreadY = true) => ({
       x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      size: Math.random() * 7 + 3,
+      y: spreadY ? Math.random() * canvas.height : -20,
+      size: Math.random() * 14 + 7,
       speedY: Math.random() * 0.6 + 0.3,
-      speedX: (Math.random() * 0.8 + 0.3),
+      speedX: Math.random() * 0.8 + 0.3,
+      dir: spawnDir,   // locked at birth — never changes
       rot: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.04,
       sway: Math.random() * Math.PI * 2,
@@ -36,9 +109,7 @@ function CherryBlossoms() {
       b: Math.floor(Math.random() * 40 + 160),
     });
 
-    const petals = Array.from({ length: 28 }, makePetal);
-    let windDir = -1;
-    let windTimer = 0;
+    const petals = Array.from({ length: 28 }, () => makePetal(true));
     let id: number;
 
     const drawPetal = (p: ReturnType<typeof makePetal>) => {
@@ -50,7 +121,6 @@ function CherryBlossoms() {
       ctx.ellipse(0, 0, p.size, p.size * 0.45, 0, 0, Math.PI * 2);
       ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
       ctx.fill();
-      // small inner highlight
       ctx.beginPath();
       ctx.ellipse(p.size * 0.1, -p.size * 0.05, p.size * 0.4, p.size * 0.2, -0.3, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,0.25)`;
@@ -60,20 +130,25 @@ function CherryBlossoms() {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       windTimer++;
-      if (windTimer > 280) { windDir *= -1; windTimer = 0; }
+      if (windTimer >= WIND_INTERVAL + Math.floor(Math.random() * 300)) {
+        spawnDir *= -1;
+        windTimer = 0;
+      }
 
       for (const p of petals) {
         p.sway += p.swaySpeed;
-        p.x += p.speedX * windDir + Math.sin(p.sway) * 0.6;
+        p.x += p.speedX * p.dir + Math.sin(p.sway) * 0.5;
         p.y += p.speedY;
         p.rot += p.rotSpeed;
+
         if (p.y > canvas.height + 20) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
+          const fresh = makePetal(false);
+          Object.assign(p, fresh);
         }
-        if (p.x < -20) p.x = canvas.width + 20;
-        if (p.x > canvas.width + 20) p.x = -20;
+        if (p.x < -30) p.x = canvas.width + 30;
+        if (p.x > canvas.width + 30) p.x = -30;
         drawPetal(p);
       }
       id = requestAnimationFrame(animate);
@@ -83,7 +158,12 @@ function CherryBlossoms() {
     return () => { cancelAnimationFrame(id); window.removeEventListener("resize", resize); };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }} />;
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <canvas ref={branchRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.82 }} />
+      <canvas ref={petalRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.7 }} />
+    </div>
+  );
 }
 
 // ── Data ─────────────────────────────────────────────────────────────
