@@ -30,7 +30,7 @@ function CherryBlossoms() {
         const wobble = (Math.random() - 0.5) * 0.28;
         const ex = x + Math.cos(angle + wobble) * len;
         const ey = y + Math.sin(angle + wobble) * len;
-        segs.push({ x1: x, y1: y, x2: ex, y2: ey, w, a: Math.min(0.9, w * 0.09 + 0.22) });
+        segs.push({ x1: x, y1: y, x2: ex, y2: ey, w, a: Math.min(0.95, w * 0.06 + 0.45) });
         const kids = Math.random() < 0.3 ? 3 : 2;
         for (let i = 0; i < kids; i++) {
           const side = i === 0 ? -1 : i === 1 ? 1 : (Math.random() < 0.5 ? -1 : 1);
@@ -64,7 +64,7 @@ function CherryBlossoms() {
         ctx.moveTo(s.x1, s.y1);
         ctx.lineTo(s.x2, s.y2);
         ctx.lineWidth = s.w;
-        ctx.strokeStyle = `rgba(12, 6, 3, ${s.a})`;
+        ctx.strokeStyle = `rgba(55, 35, 20, ${s.a})`;
         ctx.stroke();
       }
     };
@@ -160,7 +160,7 @@ function CherryBlossoms() {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <canvas ref={branchRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.82 }} />
+      <canvas ref={branchRef} className="absolute inset-0 w-full h-full" style={{ opacity: 1 }} />
       <canvas ref={petalRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.7 }} />
     </div>
   );
