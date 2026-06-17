@@ -15,57 +15,81 @@ function CherryBlossoms() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    type Seg = { x1: number; y1: number; x2: number; y2: number; w: number; a: number };
+    type Seg = {
+      x1: number; y1: number; cpx: number; cpy: number; x2: number; y2: number;
+      w: number; isTip: boolean;
+    };
 
     const draw = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      canvas.width  = canvas.offsetWidth  || canvas.parentElement?.clientWidth  || 800;
+      canvas.height = canvas.offsetHeight || canvas.parentElement?.clientHeight || 600;
       const W = canvas.width, H = canvas.height;
       const segs: Seg[] = [];
 
-      const rnd = (min: number, max: number) => min + Math.random() * (max - min);
+      const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
       function branch(x: number, y: number, angle: number, len: number, w: number, depth: number) {
-        if (w < 0.35 || depth > 10) return;
-        const wobble = (Math.random() - 0.5) * 0.28;
-        const ex = x + Math.cos(angle + wobble) * len;
-        const ey = y + Math.sin(angle + wobble) * len;
-        segs.push({ x1: x, y1: y, x2: ex, y2: ey, w, a: Math.min(0.95, w * 0.06 + 0.45) });
-        const kids = Math.random() < 0.3 ? 3 : 2;
+        if (w < 0.5 || depth > 10) return;
+
+        const wobble = (Math.random() - 0.5) * 0.35;
+        const a2 = angle + wobble;
+        const ex = x + Math.cos(a2) * len;
+        const ey = y + Math.sin(a2) * len;
+
+        // bezier control point — curves the branch organically
+        const cp = (Math.random() - 0.5) * len * 0.7;
+        const pa = a2 + Math.PI / 2;
+        const cpx = (x + ex) / 2 + Math.cos(pa) * cp;
+        const cpy = (y + ey) / 2 + Math.sin(pa) * cp;
+
+        segs.push({ x1: x, y1: y, cpx, cpy, x2: ex, y2: ey, w, isTip: w < 1.8 });
+
+        const kids = Math.random() < 0.32 ? 3 : 2;
         for (let i = 0; i < kids; i++) {
           const side = i === 0 ? -1 : i === 1 ? 1 : (Math.random() < 0.5 ? -1 : 1);
-          const spread = rnd(0.22, 0.55) * side;
-          branch(ex, ey, angle + spread, len * rnd(0.52, 0.72), w * rnd(0.52, 0.65), depth + 1);
+          const spread = rnd(0.2, 0.5) * side;
+          branch(ex, ey, a2 + spread, len * rnd(0.55, 0.72), w * rnd(0.54, 0.66), depth + 1);
         }
       }
 
-      // top-left corner — 2 trees
-      branch(0,  0,  rnd(0.3, 0.55),  rnd(120,150), rnd(11,14), 0);
-      branch(15, 0,  rnd(0.55, 0.8),  rnd(90,120),  rnd(7,10),  0);
-      // top-right corner — 2 trees
-      branch(W,  0,  Math.PI - rnd(0.3,0.55), rnd(120,150), rnd(11,14), 0);
-      branch(W-15,0, Math.PI - rnd(0.55,0.8), rnd(90,120),  rnd(7,10),  0);
-      // top center — 1 tree hanging down
-      branch(W*0.5, 0, Math.PI*0.5, rnd(80,110), rnd(6,9), 0);
-      // left side — 3 branches upper half
-      branch(0, H*0.12, rnd(0.0,0.25),  rnd(80,110), rnd(6,9),  0);
-      branch(0, H*0.28, rnd(-0.1,0.15), rnd(60,90),  rnd(4,7),  0);
-      branch(0, H*0.42, rnd(-0.05,0.1), rnd(50,70),  rnd(3,5),  0);
-      // right side — 3 branches upper half
-      branch(W, H*0.12, Math.PI - rnd(0.0,0.25),  rnd(80,110), rnd(6,9),  0);
-      branch(W, H*0.28, Math.PI - rnd(-0.1,0.15), rnd(60,90),  rnd(4,7),  0);
-      branch(W, H*0.42, Math.PI - rnd(-0.05,0.1), rnd(50,70),  rnd(3,5),  0);
+      // ── seed trees from corners + sides ──
+      branch(0,        0,        rnd(0.25, 0.5),               rnd(160,200), rnd(18,24), 0);
+      branch(20,       0,        rnd(0.5,  0.8),               rnd(110,150), rnd(10,14), 0);
+      branch(W,        0,        Math.PI - rnd(0.25,0.5),      rnd(160,200), rnd(18,24), 0);
+      branch(W-20,     0,        Math.PI - rnd(0.5,0.8),       rnd(110,150), rnd(10,14), 0);
+      branch(W * 0.5,  0,        Math.PI * 0.5,                rnd(90,130),  rnd(8,12),  0);
+      branch(0,        H * 0.15, rnd(-0.1, 0.3),               rnd(100,140), rnd(8,12),  0);
+      branch(0,        H * 0.35, rnd(-0.15,0.15),              rnd(70, 100), rnd(5,8),   0);
+      branch(0,        H * 0.52, rnd(-0.1, 0.1),               rnd(50, 80),  rnd(3,6),   0);
+      branch(W,        H * 0.15, Math.PI - rnd(-0.1,0.3),      rnd(100,140), rnd(8,12),  0);
+      branch(W,        H * 0.35, Math.PI - rnd(-0.15,0.15),    rnd(70, 100), rnd(5,8),   0);
+      branch(W,        H * 0.52, Math.PI - rnd(-0.1,0.1),      rnd(50, 80),  rnd(3,6),   0);
 
       ctx.clearRect(0, 0, W, H);
-      ctx.lineCap = "round";
+      ctx.lineCap  = "round";
       ctx.lineJoin = "round";
+
       for (const s of segs) {
         ctx.beginPath();
         ctx.moveTo(s.x1, s.y1);
-        ctx.lineTo(s.x2, s.y2);
-        ctx.lineWidth = s.w;
-        ctx.strokeStyle = `rgba(55, 35, 20, ${s.a})`;
+        ctx.quadraticCurveTo(s.cpx, s.cpy, s.x2, s.y2);
+        ctx.lineWidth    = s.w;
+        ctx.strokeStyle  = `rgba(90, 60, 40, ${Math.min(0.95, s.w * 0.05 + 0.55)})`;
         ctx.stroke();
+
+        // pink blossom clusters at thin tips
+        if (s.isTip && Math.random() < 0.55) {
+          const count = Math.floor(rnd(2, 6));
+          for (let b = 0; b < count; b++) {
+            const bx = s.x2 + rnd(-10, 10);
+            const by = s.y2 + rnd(-10, 10);
+            const br = rnd(2.5, 5.5);
+            ctx.beginPath();
+            ctx.arc(bx, by, br, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${Math.floor(rnd(200,240))},${Math.floor(rnd(100,155))},${Math.floor(rnd(140,185))},${rnd(0.55,0.85)})`;
+            ctx.fill();
+          }
+        }
       }
     };
 
