@@ -1,23 +1,107 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
+// ── Cherry Blossom Canvas ────────────────────────────────────────────
+function CherryBlossoms() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const makePetal = () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 7 + 3,
+      speedY: Math.random() * 0.6 + 0.3,
+      speedX: (Math.random() * 0.8 + 0.3),
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.04,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: Math.random() * 0.018 + 0.008,
+      opacity: Math.random() * 0.45 + 0.25,
+      r: Math.floor(Math.random() * 30 + 220),
+      g: Math.floor(Math.random() * 40 + 140),
+      b: Math.floor(Math.random() * 40 + 160),
+    });
+
+    const petals = Array.from({ length: 28 }, makePetal);
+    let windDir = -1;
+    let windTimer = 0;
+    let id: number;
+
+    const drawPetal = (p: ReturnType<typeof makePetal>) => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = p.opacity;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.size, p.size * 0.45, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
+      ctx.fill();
+      // small inner highlight
+      ctx.beginPath();
+      ctx.ellipse(p.size * 0.1, -p.size * 0.05, p.size * 0.4, p.size * 0.2, -0.3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,0.25)`;
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      windTimer++;
+      if (windTimer > 280) { windDir *= -1; windTimer = 0; }
+
+      for (const p of petals) {
+        p.sway += p.swaySpeed;
+        p.x += p.speedX * windDir + Math.sin(p.sway) * 0.6;
+        p.y += p.speedY;
+        p.rot += p.rotSpeed;
+        if (p.y > canvas.height + 20) {
+          p.y = -20;
+          p.x = Math.random() * canvas.width;
+        }
+        if (p.x < -20) p.x = canvas.width + 20;
+        if (p.x > canvas.width + 20) p.x = -20;
+        drawPetal(p);
+      }
+      id = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => { cancelAnimationFrame(id); window.removeEventListener("resize", resize); };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }} />;
+}
+
+// ── Data ─────────────────────────────────────────────────────────────
 const skills = [
   {
-    front: { icon: "⚔️", title: "Combat Animation", desc: "Hand-keyed, frame perfect" },
+    front: { icon: "⚔", title: "Combat Animation", desc: "Hand-keyed — frame perfect" },
     back: "Combat combos · Hit reactions · Takedowns · Death animations · Creature attacks · Weighty impactful motion",
-    color: "from-purple-700 to-purple-950",
+    color: "from-cyan-900 to-slate-950", accent: "#00e5ff",
   },
   {
-    front: { icon: "⚙️", title: "Technical Animation", desc: "Systems & implementation" },
+    front: { icon: "⚙", title: "Technical Animation", desc: "Systems & implementation" },
     back: "State machines · Blend trees · AnimGraph · EventGraph · Blueprint · Unity Animator · Runtime logic",
-    color: "from-indigo-700 to-indigo-950",
+    color: "from-indigo-900 to-slate-950", accent: "#818cf8",
   },
   {
-    front: { icon: "🦴", title: "Rigging & Pipeline", desc: "Characters & creatures" },
+    front: { icon: "☰", title: "Rigging & Pipeline", desc: "Characters & creatures" },
     back: "Biped & quadruped rigs · mGear · Custom control setups · MEL & Python tools · Pipeline automation",
-    color: "from-pink-700 to-pink-950",
+    color: "from-amber-900 to-slate-950", accent: "#fbbf24",
   },
 ];
 
@@ -31,9 +115,9 @@ const projects = [
     desc: "Hack 'n' Slash Action Rogue-lite. Full character ownership of Ekku, Vekta and Flux — hand-keyed combat, locomotion, and complete rig pipeline for all player characters and creatures.",
     tags: ["Hand-keyed", "Combat", "Rigging", "Unity"],
     link: "https://store.steampowered.com/app/1866130/Morbid_Metal/",
-    videoId: "cMBqSQQhwRY",
-    accentColor: "#22d3ee",
-    bgFrom: "#0a2a30",
+    videoId: "m204nKVlBGs",
+    accent: "#00e5ff",
+    label: "SHIPPED",
   },
   {
     title: "The Cycle: Frontier",
@@ -44,9 +128,9 @@ const projects = [
     desc: "PvP Extraction Shooter. Owned the quadruped Rattler creature, FPP sniper/pistol locomotion rework, NPC vendors on Prospect Station, and camera systems for in-game vanity UI.",
     tags: ["Creature", "FPP", "NPCs", "UE4"],
     link: "https://store.steampowered.com/app/868270",
-    videoId: "boCUKRDFxJY",
-    accentColor: "#fb923c",
-    bgFrom: "#2a1500",
+    videoId: "4w-Z9Yu1sWE",
+    accent: "#fb923c",
+    label: "SHIPPED",
   },
   {
     title: "Kinstrife",
@@ -57,16 +141,16 @@ const projects = [
     desc: "Currently in active development. Implementing animation systems in-engine, combat gameplay animations, rigging support for characters and creatures, facial animation, lipsync, and pipeline tooling.",
     tags: ["In Development", "Combat", "Pipeline", "UE5"],
     link: null,
-    videoId: null,
-    accentColor: "#c084fc",
-    bgFrom: "#1a0a2a",
+    videoId: "c_mI0VHowsc",
+    accent: "#c084fc",
+    label: "IN DEV",
   },
 ];
 
 const experience = [
   { years: "2026 – Now", role: "Gameplay & Technical Animator", studio: "Finitude", detail: "Remote · Berlin" },
   { years: "2023 – 2026", role: "Gameplay & Technical Animator", studio: "Screen Juice Interactive GmbH", detail: "Remote · Berlin" },
-  { years: "2021", role: "3D Animator (Student)", studio: "iAnimate.net", detail: "Game Workshop 1 & 2 — Combat & Body Mechanics" },
+  { years: "2021", role: "3D Animator — Student", studio: "iAnimate.net", detail: "Game Workshop 1 & 2 · Combat & Body Mechanics" },
   { years: "2020 – 2021", role: "Junior → 3D Animator", studio: "YAGER Development", detail: "Remote · Berlin" },
   { years: "2020", role: "Intern 3D Animator", studio: "YAGER Development", detail: "Berlin" },
   { years: "2017 – 2019", role: "Student — Digital Art & Animation", studio: "Games Academy Berlin", detail: "Focus: 3D Animation & Rigging" },
@@ -80,17 +164,18 @@ const techStack = [
   { cat: "Production", items: ["Git", "Perforce", "Jira", "Plastic SCM"] },
 ];
 
+// ── Flip Card ────────────────────────────────────────────────────────
 function FlipCard({ skill, index, flipped, onClick }: {
   skill: typeof skills[0]; index: number; flipped: boolean; onClick: () => void;
 }) {
   return (
     <motion.div
-      className="cursor-pointer"
-      style={{ perspective: 1000, height: 200 }}
+      className="cursor-pointer bracket-corner"
+      style={{ perspective: 1000, height: 210 }}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.15, duration: 0.6, ease: "easeOut" }}
+      transition={{ delay: index * 0.15, duration: 0.6 }}
       onClick={onClick}
     >
       <motion.div
@@ -98,30 +183,43 @@ function FlipCard({ skill, index, flipped, onClick }: {
         animate={{ rotateY: flipped ? 180 : 0, rotateX: flipped ? [0, -8, 0] : [0, 8, 0] }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
       >
-        <div style={{ backfaceVisibility: "hidden" }}
-          className="absolute inset-0 bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col justify-between hover:border-purple-500 transition-colors duration-300">
-          <div className="text-3xl">{skill.front.icon}</div>
+        <div style={{ backfaceVisibility: "hidden", background: "rgba(1,15,20,0.9)" } as React.CSSProperties}
+          className="absolute inset-0 neon-border p-6 flex flex-col justify-between transition-all duration-300">
+          <div className="text-2xl" style={{ color: skill.accent }}>{skill.front.icon}</div>
           <div>
-            <h3 className="text-white font-semibold text-lg mb-1">{skill.front.title}</h3>
-            <p className="text-neutral-500 text-sm">{skill.front.desc}</p>
+            <h3 className="text-white font-bold text-lg mb-1 tracking-wider uppercase">{skill.front.title}</h3>
+            <p className="text-sm font-mono" style={{ color: "rgba(0,229,255,0.5)" }}>{skill.front.desc}</p>
           </div>
-          <p className="text-neutral-600 text-xs">click to flip</p>
+          <p className="text-xs font-mono" style={{ color: "rgba(0,229,255,0.3)" }}>[ CLICK TO ACCESS ]</p>
         </div>
-        <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-          className={`absolute inset-0 bg-gradient-to-br ${skill.color} rounded-2xl p-6 flex flex-col justify-between`}>
-          <div className="text-white text-xs uppercase tracking-widest opacity-60">{skill.front.title}</div>
-          <p className="text-white text-sm leading-relaxed">{skill.back}</p>
-          <p className="text-white/40 text-xs">click to flip back</p>
+        <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", borderColor: skill.accent + "40" } as React.CSSProperties}
+          className={`absolute inset-0 bg-gradient-to-br ${skill.color} p-6 flex flex-col justify-between border`}>
+          <div className="text-xs uppercase tracking-widest font-mono" style={{ color: skill.accent }}>{skill.front.title}</div>
+          <p className="text-white/80 text-sm leading-relaxed font-mono">{skill.back}</p>
+          <p className="text-xs font-mono" style={{ color: skill.accent + "60" }}>[ CLICK TO CLOSE ]</p>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
+// ── Project Card with hover-to-play ──────────────────────────────────
 function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
-  const [videoOpen, setVideoOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [iframeReady, setIframeReady] = useState(false);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
+
+  const onEnter = useCallback(() => {
+    hoverTimer.current = setTimeout(() => { setHovered(true); setIframeReady(true); }, 400);
+  }, []);
+
+  const onLeave = useCallback(() => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    setHovered(false);
+    setTimeout(() => setIframeReady(false), 500);
+  }, []);
 
   return (
     <motion.div
@@ -129,61 +227,66 @@ function ProjectCard({ project, index }: { project: typeof projects[0]; index: n
       initial={{ opacity: 0, y: 50 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: index * 0.1 }}
-      className="bg-neutral-950 border border-neutral-800 rounded-3xl overflow-hidden"
+      className="bracket-corner neon-border flex flex-col"
+      style={{ background: "rgba(1,10,14,0.95)" }}
     >
-      {/* Video window */}
+      {/* Video / Thumbnail area */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ paddingTop: "56.25%", background: `linear-gradient(135deg, ${project.bgFrom}, #000)` }}
+        style={{ paddingTop: "56.25%", background: "#000", cursor: "pointer" }}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
       >
-        {videoOpen && project.videoId ? (
+        {/* Static title overlay — hidden when video playing */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(ellipse at center, ${project.accent}15 0%, #000 70%)`,
+            opacity: hovered ? 0 : 1,
+            pointerEvents: "none",
+          }}
+        >
+          <p className="text-xs uppercase tracking-widest font-mono" style={{ color: project.accent }}>
+            {project.studio} · {project.years}
+          </p>
+          <h3 className="text-white text-2xl font-bold tracking-widest uppercase text-center px-4">{project.title}</h3>
+          <p className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>{project.engine}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-xs font-mono px-3 py-1 border" style={{ color: project.accent, borderColor: project.accent + "40", background: project.accent + "15" }}>
+              ▶ HOVER TO PLAY
+            </span>
+            <span className="cyber-tag flicker" style={{ color: project.accent, borderColor: project.accent + "40", background: project.accent + "15" }}>
+              {project.label}
+            </span>
+          </div>
+        </div>
+
+        {/* iframe — only mounted when hovered */}
+        {iframeReady && (
           <iframe
-            className="absolute inset-0 w-full h-full"
-            src={`https://www.youtube.com/embed/${project.videoId}?autoplay=1`}
+            className="absolute inset-0 w-full h-full transition-opacity duration-300"
+            style={{ opacity: hovered ? 1 : 0 }}
+            src={`https://www.youtube.com/embed/${project.videoId}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0`}
             allow="autoplay; fullscreen"
             allowFullScreen
           />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <div className="text-center px-8">
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: project.accentColor }}>
-                {project.studio} · {project.years}
-              </p>
-              <h3 className="text-white text-3xl font-bold mb-1">{project.title}</h3>
-              <p className="text-neutral-400 text-sm">{project.engine}</p>
-            </div>
-            {project.videoId && (
-              <button
-                onClick={() => setVideoOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-black transition-all hover:scale-105"
-                style={{ background: project.accentColor }}
-              >
-                ▶ Watch Trailer
-              </button>
-            )}
-            {!project.videoId && (
-              <span className="px-4 py-1.5 rounded-full text-xs font-medium border"
-                style={{ color: project.accentColor, borderColor: project.accentColor }}>
-                In Development
-              </span>
-            )}
-          </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="p-6">
-        <div className="flex flex-wrap gap-2 mb-4">
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex flex-wrap gap-2 mb-3">
           {project.tags.map(tag => (
-            <span key={tag} className="text-xs px-3 py-1 rounded-full bg-neutral-800 text-neutral-400">{tag}</span>
+            <span key={tag} className="cyber-tag">{tag}</span>
           ))}
         </div>
-        <p className="text-sm font-medium mb-2" style={{ color: project.accentColor }}>{project.role}</p>
-        <p className="text-neutral-300 text-sm leading-relaxed mb-4">{project.desc}</p>
+        <p className="text-xs font-mono mb-2" style={{ color: project.accent }}>{project.role}</p>
+        <p className="text-sm leading-relaxed mb-4 flex-1" style={{ color: "rgba(255,255,255,0.55)" }}>{project.desc}</p>
         {project.link && (
           <a href={project.link} target="_blank" rel="noopener noreferrer"
-            className="text-xs text-neutral-500 hover:text-white transition-colors underline underline-offset-4">
-            View on Steam →
+            className="text-xs font-mono hover:text-white transition-colors"
+            style={{ color: "rgba(0,229,255,0.35)" }}>
+            VIEW ON STEAM →
           </a>
         )}
       </div>
@@ -191,145 +294,155 @@ function ProjectCard({ project, index }: { project: typeof projects[0]; index: n
   );
 }
 
+// ── Timeline ─────────────────────────────────────────────────────────
 function TimelineItem({ item, index }: { item: typeof experience[0]; index: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
   return (
-    <motion.div
-      ref={ref}
+    <motion.div ref={ref}
       initial={{ opacity: 0, x: -30 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       className="flex gap-6 group"
     >
       <div className="flex flex-col items-center">
-        <div className="w-3 h-3 rounded-full border-2 border-purple-500 bg-black mt-1 group-hover:bg-purple-500 transition-colors" />
-        <div className="w-px flex-1 bg-neutral-800 mt-2" />
+        <div className="w-2 h-2 mt-2 border transition-colors duration-300 group-hover:bg-cyan-400"
+          style={{ borderColor: "rgba(0,229,255,0.5)" }} />
+        <div className="w-px flex-1 mt-2" style={{ background: "rgba(0,229,255,0.1)" }} />
       </div>
       <div className="pb-8">
-        <p className="text-xs text-purple-400 mb-1 font-mono">{item.years}</p>
-        <p className="text-white font-medium">{item.role}</p>
-        <p className="text-neutral-400 text-sm">{item.studio}</p>
-        <p className="text-neutral-600 text-xs mt-0.5">{item.detail}</p>
+        <p className="text-xs font-mono mb-1" style={{ color: "rgba(0,229,255,0.6)" }}>{item.years}</p>
+        <p className="text-white font-bold tracking-wide">{item.role}</p>
+        <p className="text-sm" style={{ color: "rgba(0,229,255,0.7)" }}>{item.studio}</p>
+        <p className="text-xs font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{item.detail}</p>
       </div>
     </motion.div>
   );
 }
 
+// ── Page ─────────────────────────────────────────────────────────────
 export default function Home() {
   const [activeSkill, setActiveSkill] = useState<number | null>(null);
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="text-white min-h-screen" style={{ background: "#010a0e" }}>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-black/80 backdrop-blur-md border-b border-neutral-900">
-        <span className="font-bold tracking-tight">Marko Rudjic</span>
-        <div className="flex items-center gap-6 text-sm text-neutral-400">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b"
+        style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
+        <span className="font-bold tracking-[0.3em] text-sm uppercase neon-cyan flicker">MR//PORTFOLIO</span>
+        <div className="flex items-center gap-6 text-xs font-mono uppercase tracking-widest" style={{ color: "rgba(0,229,255,0.6)" }}>
           <a href="#work" className="hover:text-white transition-colors">Work</a>
           <a href="#skills" className="hover:text-white transition-colors">Skills</a>
-          <a href="#experience" className="hover:text-white transition-colors">Experience</a>
+          <a href="#experience" className="hover:text-white transition-colors">Timeline</a>
           <a href="https://www.artstation.com/markorudjic/profile" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">ArtStation</a>
           <a href="mailto:Marko.Rudjic@gmx.ch"
-            className="px-4 py-1.5 rounded-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all text-xs">
-            Get in touch
+            className="px-4 py-1.5 border font-mono text-xs transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
+            CONTACT
           </a>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 text-center">
-        <motion.p
-          className="text-xs uppercase tracking-widest text-purple-400 mb-6"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
-        >
-          Berlin, Germany · Available for Remote & Hybrid
+      <section className="min-h-screen grid-bg flex flex-col items-center justify-center px-6 pt-24 pb-16 text-center relative overflow-hidden">
+        {/* Petals */}
+        <CherryBlossoms />
+
+        {/* Glow */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 60%, rgba(0,229,255,0.06) 0%, transparent 65%)" }} />
+        <div className="absolute top-1/2 left-0 right-0 h-px pointer-events-none"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent)" }} />
+
+        <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8 relative z-10"
+          style={{ color: "rgba(0,229,255,0.5)" }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
+          Berlin, Germany · Remote & Hybrid · Open to opportunities
         </motion.p>
 
-        <motion.h1
-          className="text-6xl md:text-8xl font-bold leading-none mb-6"
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
-        >
-          Marko
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400">
-            Rudjic
-          </span>
-        </motion.h1>
+        <motion.div className="mb-4 relative z-10"
+          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}>
+          <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase glitch"
+            data-text="MARKO" style={{ color: "#fff", letterSpacing: "0.08em" }}>
+            MARKO
+          </h1>
+          <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase neon-cyan"
+            style={{ letterSpacing: "0.08em", marginTop: "-0.1em" }}>
+            RUDJIC
+          </h1>
+        </motion.div>
 
-        <motion.p
-          className="text-xl text-neutral-400 mb-4 font-light"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
-        >
-          Gameplay & Technical Animator
+        <motion.div className="flex items-center gap-4 mb-4 relative z-10"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }}>
+          <div className="h-px w-16" style={{ background: "rgba(0,229,255,0.4)" }} />
+          <p className="text-sm uppercase tracking-[0.4em] font-mono" style={{ color: "rgba(0,229,255,0.8)" }}>
+            Gameplay & Technical Animator
+          </p>
+          <div className="h-px w-16" style={{ background: "rgba(0,229,255,0.4)" }} />
+        </motion.div>
+
+        <motion.p className="max-w-xl leading-relaxed mb-10 text-sm font-mono relative z-10"
+          style={{ color: "rgba(255,255,255,0.4)" }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.5 }}>
+          Combat · Locomotion · Character Systems · Real-time Games<br />
+          5+ years in Unreal & Unity — from hand-keyed animation to<br />
+          state machine architecture and rigging pipeline supervision.
         </motion.p>
 
-        <motion.p
-          className="text-neutral-500 max-w-xl leading-relaxed mb-10 text-sm"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.5 }}
-        >
-          Specialising in combat, locomotion and character systems for real-time games.
-          5+ years building responsive, weighty animation systems in Unreal and Unity —
-          from hand-keyed combat to state machine architecture and rigging pipeline supervision.
-        </motion.p>
-
-        <motion.div
-          className="flex flex-wrap gap-3 justify-center mb-16"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}
-        >
+        <motion.div className="flex flex-wrap gap-3 justify-center mb-16 relative z-10"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}>
+          {/* Dimmed down — no full bright cyan fill */}
           <a href="#work"
-            className="bg-white text-black font-medium px-6 py-3 rounded-full hover:bg-neutral-200 transition-colors text-sm">
-            See my work
+            className="px-6 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.5)", color: "#00e5ff" }}>
+            VIEW WORK
           </a>
           <a href="https://www.linkedin.com/in/marko-rudjic/" target="_blank" rel="noopener noreferrer"
-            className="border border-neutral-700 text-white px-6 py-3 rounded-full hover:border-purple-500 transition-colors text-sm">
-            LinkedIn
+            className="px-6 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
+            LINKEDIN
           </a>
           <a href="https://www.artstation.com/markorudjic/profile" target="_blank" rel="noopener noreferrer"
-            className="border border-neutral-700 text-white px-6 py-3 rounded-full hover:border-purple-500 transition-colors text-sm">
-            ArtStation
+            className="px-6 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
+            ARTSTATION
           </a>
         </motion.div>
 
-        {/* Demo reel embed */}
-        <motion.div
-          className="w-full max-w-4xl mx-auto rounded-2xl overflow-hidden border border-neutral-800"
-          style={{ boxShadow: "0 0 80px rgba(168,85,247,0.15)" }}
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.8 }}
-        >
+        {/* Demo reel */}
+        <motion.div className="w-full max-w-4xl mx-auto bracket-corner relative z-10"
+          style={{ boxShadow: "0 0 60px rgba(0,229,255,0.1)" }}
+          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.8 }}>
+          <div className="flex items-center justify-between px-4 py-2 border-b font-mono text-xs"
+            style={{ background: "rgba(0,229,255,0.05)", borderColor: "rgba(0,229,255,0.15)", color: "rgba(0,229,255,0.6)" }}>
+            <span>▶ DEMO_REEL_2026.mp4</span>
+            <a href="https://www.youtube.com/watch?v=nffNFElOPWY" target="_blank" rel="noopener noreferrer"
+              className="hover:text-white transition-colors">OPEN IN YOUTUBE ↗</a>
+          </div>
           <div style={{ position: "relative", paddingTop: "56.25%" }}>
             <iframe
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
               src="https://www.youtube.com/embed/nffNFElOPWY"
-              title="Marko Rudjic — Demo Reel"
+              title="Marko Rudjic — Demo Reel 2026"
               allow="fullscreen"
               allowFullScreen
             />
-          </div>
-          <div className="bg-neutral-950 px-6 py-3 flex items-center justify-between">
-            <span className="text-neutral-400 text-sm">Demo Reel 2026</span>
-            <a href="https://www.youtube.com/watch?v=nffNFElOPWY" target="_blank" rel="noopener noreferrer"
-              className="text-xs text-purple-400 hover:text-purple-300 transition-colors">
-              Watch on YouTube →
-            </a>
           </div>
         </motion.div>
       </section>
 
       {/* Projects */}
-      <section id="work" className="max-w-5xl mx-auto px-6 py-24">
-        <motion.h2
-          className="text-sm uppercase tracking-widest text-purple-400 mb-2"
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-        >
-          Featured Work
-        </motion.h2>
-        <motion.p
-          className="text-3xl font-bold mb-12"
-          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        >
-          Shipped titles & current project
+      <section id="work" className="max-w-6xl mx-auto px-6 py-24">
+        <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
+          style={{ color: "rgba(0,229,255,0.5)" }}
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+          // FEATURED WORK
         </motion.p>
+        <motion.h2 className="text-4xl font-bold uppercase tracking-widest mb-12"
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          Shipped Titles &amp; Current Project
+        </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project, i) => (
             <ProjectCard key={project.title} project={project} index={i} />
@@ -337,39 +450,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Skills flip cards */}
-      <section id="skills" className="max-w-5xl mx-auto px-6 py-24">
-        <motion.h2
-          className="text-sm uppercase tracking-widest text-purple-400 mb-2"
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-        >
-          Specialisations
-        </motion.h2>
-        <motion.p
-          className="text-3xl font-bold mb-12"
-          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        >
-          What I bring to the team
+      {/* Skills */}
+      <section id="skills" className="max-w-6xl mx-auto px-6 py-24">
+        <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
+          style={{ color: "rgba(0,229,255,0.5)" }}
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+          // SPECIALISATIONS
         </motion.p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
+        <motion.h2 className="text-4xl font-bold uppercase tracking-widest mb-12"
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          What I Bring
+        </motion.h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           {skills.map((skill, i) => (
-            <FlipCard
-              key={skill.front.title}
-              skill={skill}
-              index={i}
+            <FlipCard key={skill.front.title} skill={skill} index={i}
               flipped={activeSkill === i}
-              onClick={() => setActiveSkill(activeSkill === i ? null : i)}
-            />
+              onClick={() => setActiveSkill(activeSkill === i ? null : i)} />
           ))}
         </div>
-
-        {/* Tech stack */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {techStack.map(({ cat, items }) => (
-            <div key={cat} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4">
-              <p className="text-xs text-purple-400 uppercase tracking-widest mb-3">{cat}</p>
+            <div key={cat} className="neon-border p-4" style={{ background: "rgba(1,10,14,0.8)" }}>
+              <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "rgba(0,229,255,0.5)" }}>[{cat}]</p>
               {items.map(item => (
-                <p key={item} className="text-neutral-300 text-sm mb-1">{item}</p>
+                <p key={item} className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.6)" }}>{item}</p>
               ))}
             </div>
           ))}
@@ -377,63 +481,63 @@ export default function Home() {
       </section>
 
       {/* Experience */}
-      <section id="experience" className="max-w-5xl mx-auto px-6 py-24">
-        <motion.h2
-          className="text-sm uppercase tracking-widest text-purple-400 mb-2"
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-        >
+      <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
+        <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
+          style={{ color: "rgba(0,229,255,0.5)" }}
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+          // CAREER TIMELINE
+        </motion.p>
+        <motion.h2 className="text-4xl font-bold uppercase tracking-widest mb-12"
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           Experience
         </motion.h2>
-        <motion.p
-          className="text-3xl font-bold mb-12"
-          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        >
-          Career timeline
-        </motion.p>
         <div className="max-w-xl">
-          {experience.map((item, i) => (
-            <TimelineItem key={i} item={item} index={i} />
-          ))}
+          {experience.map((item, i) => <TimelineItem key={i} item={item} index={i} />)}
         </div>
       </section>
 
       {/* Contact */}
-      <section className="max-w-5xl mx-auto px-6 py-24 text-center">
-        <motion.h2
-          className="text-4xl md:text-6xl font-bold mb-6"
-          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        >
-          Let's work
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">together.</span>
-        </motion.h2>
-        <motion.p
-          className="text-neutral-500 mb-10 max-w-md mx-auto"
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-        >
-          Open to new opportunities in Berlin, remote or hybrid.
+      <section className="max-w-6xl mx-auto px-6 py-24 text-center relative">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04) 0%, transparent 70%)" }} />
+        <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-4"
+          style={{ color: "rgba(0,229,255,0.5)" }}
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+          // INITIATE CONTACT
         </motion.p>
-        <motion.div
-          className="flex flex-wrap gap-4 justify-center"
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-        >
+        <motion.h2 className="text-5xl md:text-7xl font-bold uppercase tracking-widest mb-4"
+          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          Let's Build<br />
+          <span className="neon-cyan">Together.</span>
+        </motion.h2>
+        <motion.p className="text-sm font-mono mb-10 max-w-md mx-auto"
+          style={{ color: "rgba(255,255,255,0.3)" }}
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+          Open to new opportunities — Berlin, remote or hybrid.
+        </motion.p>
+        <motion.div className="flex flex-wrap gap-4 justify-center"
+          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
           <a href="mailto:Marko.Rudjic@gmx.ch"
-            className="bg-white text-black font-medium px-8 py-3 rounded-full hover:bg-neutral-200 transition-colors">
-            Send an email
+            className="px-8 py-3 font-mono text-xs uppercase tracking-widest font-bold transition-all hover:scale-105"
+            style={{ background: "#00e5ff", color: "#000" }}>
+            SEND MESSAGE
           </a>
           <a href="https://www.linkedin.com/in/marko-rudjic/" target="_blank" rel="noopener noreferrer"
-            className="border border-neutral-700 text-white px-8 py-3 rounded-full hover:border-purple-500 transition-colors">
-            LinkedIn
+            className="px-8 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
+            LINKEDIN
           </a>
           <a href="https://www.artstation.com/markorudjic/profile" target="_blank" rel="noopener noreferrer"
-            className="border border-neutral-700 text-white px-8 py-3 rounded-full hover:border-purple-500 transition-colors">
-            ArtStation
+            className="px-8 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
+            ARTSTATION
           </a>
         </motion.div>
       </section>
 
-      <footer className="border-t border-neutral-900 py-8 text-center text-neutral-600 text-xs">
-        © 2026 Marko Rudjic · Gameplay & Technical Animator · Berlin
+      <footer className="border-t py-8 text-center font-mono text-xs"
+        style={{ borderColor: "rgba(0,229,255,0.1)", color: "rgba(0,229,255,0.2)" }}>
+        © 2026 MARKO RUDJIC · GAMEPLAY &amp; TECHNICAL ANIMATOR · BERLIN · MR//SYSTEMS
       </footer>
 
     </div>
