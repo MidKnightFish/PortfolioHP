@@ -3,132 +3,9 @@
 import { motion, useInView } from "framer-motion";
 import { useState, useRef, useEffect, useCallback } from "react";
 
-// ── Cherry Blossom Canvas ────────────────────────────────────────────
+// ── Cherry Blossom Canvas (petals only — bg image handles the tree) ──
 function CherryBlossoms() {
   const petalRef = useRef<HTMLCanvasElement>(null);
-  const branchRef = useRef<HTMLCanvasElement>(null);
-
-  // ── Branch drawing ──────────────────────────────────────────────
-  useEffect(() => {
-    const canvas = branchRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    type Seg = {
-      x1: number; y1: number; cpx: number; cpy: number; x2: number; y2: number;
-      w: number; isTip: boolean;
-    };
-
-    const draw = () => {
-      canvas.width  = canvas.offsetWidth  || canvas.parentElement?.clientWidth  || 800;
-      canvas.height = canvas.offsetHeight || canvas.parentElement?.clientHeight || 600;
-      const W = canvas.width, H = canvas.height;
-      const segs: Seg[] = [];
-      const blossoms: { x: number; y: number; r: number; alpha: number }[] = [];
-
-      const rnd = (a: number, b: number) => a + Math.random() * (b - a);
-
-      function branch(x: number, y: number, angle: number, len: number, w: number, depth: number) {
-        if (w < 0.35 || depth > 13) return;
-
-        const wobble = (Math.random() - 0.5) * (w > 15 ? 0.25 : 0.45);
-        const a2 = angle + wobble;
-        const ex = x + Math.cos(a2) * len;
-        const ey = y + Math.sin(a2) * len;
-
-        // sweeping bezier — more curl on mid-thickness branches
-        const curlAmt = w > 20 ? 0.6 : w > 8 ? 1.2 : 0.8;
-        const cp = (Math.random() - 0.5) * len * curlAmt;
-        const pa = a2 + Math.PI / 2;
-        const cpx = (x + ex) / 2 + Math.cos(pa) * cp;
-        const cpy = (y + ey) / 2 + Math.sin(pa) * cp;
-
-        const isTip = w < 1.5;
-        segs.push({ x1: x, y1: y, cpx, cpy, x2: ex, y2: ey, w, isTip });
-
-        // dense blossom clusters on thin ends
-        if (isTip && Math.random() < 0.7) {
-          const count = Math.floor(rnd(3, 10));
-          for (let i = 0; i < count; i++) {
-            blossoms.push({ x: ex + rnd(-14,14), y: ey + rnd(-14,14), r: rnd(2.5,7), alpha: rnd(0.5,0.9) });
-          }
-        }
-
-        const kids = w > 12 ? (Math.random() < 0.4 ? 3 : 2) : Math.random() < 0.25 ? 3 : 2;
-        for (let i = 0; i < kids; i++) {
-          const side = i === 0 ? -1 : i === 1 ? 1 : (Math.random() < 0.5 ? -1 : 1);
-          const spread = rnd(0.18, 0.48) * side;
-          branch(ex, ey, a2 + spread, len * rnd(0.55, 0.72), w * rnd(0.56, 0.68), depth + 1);
-        }
-      }
-
-      // ── LEFT — massive trunk from bottom-left, sweeping up and inward ──
-      branch(-20,      H + 20,   rnd(-1.25,-0.95),  rnd(280,340), rnd(44,54), 0);
-      branch(-10,      H * 0.82, rnd(-0.55,-0.2),   rnd(200,260), rnd(28,36), 0);
-      branch(0,        H * 0.6,  rnd(-0.3, 0.05),   rnd(160,210), rnd(18,24), 0);
-      branch(0,        H * 0.38, rnd(-0.15,0.2),    rnd(120,160), rnd(11,16), 0);
-      branch(0,        H * 0.18, rnd(-0.05,0.3),    rnd(90, 130), rnd(7,11),  0);
-
-      // ── RIGHT — mirrored massive trunk ──
-      branch(W + 20,   H + 20,   Math.PI + rnd(0.95,1.25), rnd(280,340), rnd(44,54), 0);
-      branch(W + 10,   H * 0.82, Math.PI + rnd(0.2,0.55),  rnd(200,260), rnd(28,36), 0);
-      branch(W,        H * 0.6,  Math.PI + rnd(-0.05,0.3), rnd(160,210), rnd(18,24), 0);
-      branch(W,        H * 0.38, Math.PI + rnd(-0.2,0.15), rnd(120,160), rnd(11,16), 0);
-      branch(W,        H * 0.18, Math.PI + rnd(-0.3,0.05), rnd(90, 130), rnd(7,11),  0);
-
-      // ── TOP — branches dripping down from top edge ──
-      branch(W * 0.46, -10,      Math.PI*0.5,               rnd(180,230), rnd(16,22), 0);
-      branch(W * 0.54, -10,      Math.PI*0.5+rnd(-0.2,0.2), rnd(140,180), rnd(12,16), 0);
-      branch(0,        0,        rnd(0.25,0.55),             rnd(160,200), rnd(16,20), 0);
-      branch(W,        0,        Math.PI-rnd(0.25,0.55),     rnd(160,200), rnd(16,20), 0);
-
-      ctx.clearRect(0, 0, W, H);
-      ctx.lineCap  = "round";
-      ctx.lineJoin = "round";
-
-      // atmospheric side glow — warm fog behind the trunks
-      const leftGlow = ctx.createRadialGradient(W*0.08, H*0.6, 0, W*0.08, H*0.6, W*0.38);
-      leftGlow.addColorStop(0,   "rgba(60,30,15,0.18)");
-      leftGlow.addColorStop(1,   "rgba(0,0,0,0)");
-      ctx.fillStyle = leftGlow; ctx.fillRect(0,0,W,H);
-      const rightGlow = ctx.createRadialGradient(W*0.92, H*0.6, 0, W*0.92, H*0.6, W*0.38);
-      rightGlow.addColorStop(0,  "rgba(60,30,15,0.18)");
-      rightGlow.addColorStop(1,  "rgba(0,0,0,0)");
-      ctx.fillStyle = rightGlow; ctx.fillRect(0,0,W,H);
-
-      // sort thick first so thinner branches draw on top
-      segs.sort((a, b) => b.w - a.w);
-
-      for (const s of segs) {
-        const t = Math.min(1, s.w / 50);
-        // thick trunk: dark warm grey-brown → thin tips: pale bone
-        const rC = Math.floor(85  + t * 70);
-        const gC = Math.floor(65  + t * 60);
-        const bC = Math.floor(50  + t * 45);
-        const al = Math.min(0.95, s.w * 0.022 + 0.48);
-        ctx.beginPath();
-        ctx.moveTo(s.x1, s.y1);
-        ctx.quadraticCurveTo(s.cpx, s.cpy, s.x2, s.y2);
-        ctx.lineWidth   = s.w;
-        ctx.strokeStyle = `rgba(${rC},${gC},${bC},${al})`;
-        ctx.stroke();
-      }
-
-      // blossoms on top of branches
-      for (const bl of blossoms) {
-        ctx.beginPath();
-        ctx.arc(bl.x, bl.y, bl.r, 0, Math.PI * 2);
-        const rB = Math.floor(rnd(205,248)), gB = Math.floor(rnd(105,165)), bB = Math.floor(rnd(140,195));
-        ctx.fillStyle = `rgba(${rB},${gB},${bB},${bl.alpha})`;
-        ctx.fill();
-      }
-    };
-
-    draw();
-    window.addEventListener("resize", draw);
-    return () => window.removeEventListener("resize", draw);
-  }, []);
 
   // ── Petal animation ─────────────────────────────────────────────
   useEffect(() => {
@@ -214,12 +91,7 @@ function CherryBlossoms() {
     return () => { cancelAnimationFrame(id); window.removeEventListener("resize", resize); };
   }, []);
 
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      <canvas ref={branchRef} className="absolute inset-0 w-full h-full" style={{ opacity: 1 }} />
-      <canvas ref={petalRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.7 }} />
-    </div>
-  );
+  return <canvas ref={petalRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.75 }} />;
 }
 
 // ── Data ─────────────────────────────────────────────────────────────
@@ -481,22 +353,33 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="min-h-screen grid-bg flex flex-col items-center justify-center px-6 pt-24 pb-16 text-center relative overflow-hidden">
+      <section className="flex flex-col items-center justify-start px-6 text-center relative overflow-hidden"
+        style={{ minHeight: "200vh", background: "#010a0e" }}>
+
+        {/* Background image — tree + reflection, portrait image fills full height */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "url('/hero-bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
+        }} />
+
+        {/* Subtle dark overlay so text stays readable over the image */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "linear-gradient(to bottom, rgba(1,10,14,0.45) 0%, rgba(1,10,14,0.15) 30%, rgba(1,10,14,0.15) 60%, rgba(1,10,14,0.6) 100%)"
+        }} />
+
+        {/* Neon center glow */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 28%, rgba(0,229,255,0.06) 0%, transparent 55%)" }} />
+
         {/* Petals */}
         <CherryBlossoms />
 
-        {/* Glow */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 60%, rgba(0,229,255,0.06) 0%, transparent 65%)" }} />
-        {/* Atmospheric depth — dark vignette + side fog to frame the trees */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0,4,8,0.55) 100%)"
-        }} />
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "linear-gradient(to right, rgba(3,10,8,0.45) 0%, transparent 28%, transparent 72%, rgba(3,10,8,0.45) 100%)"
-        }} />
         <div className="absolute top-1/2 left-0 right-0 h-px pointer-events-none"
           style={{ background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent)" }} />
+
+        <div className="h-24 md:h-32" /> {/* nav spacer */}
 
         <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8 relative z-10"
           style={{ color: "rgba(0,229,255,0.5)" }}
