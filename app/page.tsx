@@ -369,34 +369,28 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: "#010a0e" }}>
+      <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
+        style={{ paddingTop: "7rem", paddingBottom: "5rem", background: "#010a0e" }}>
 
-        {/* Full image in document flow — section height = image height, no stretch */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hero-bg.png" alt="" aria-hidden="true"
-          className="w-full block pointer-events-none select-none"
-          style={{ height: "auto", minWidth: "100%" }} />
+        {/* Background image — fixed behind all content */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "url('/hero-bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 15%",
+          backgroundRepeat: "no-repeat",
+        }} />
 
-        {/* All content floats over the image */}
-        <div className="absolute inset-0 flex flex-col items-center px-6 text-center">
+        {/* Overlays */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "linear-gradient(to bottom, rgba(1,10,14,0.5) 0%, rgba(1,10,14,0.08) 25%, rgba(1,10,14,0.08) 70%, rgba(1,10,14,0.7) 100%)"
+        }} />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.07) 0%, transparent 55%)" }} />
 
-          {/* Dark overlay — heavier at very top and very bottom */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: "linear-gradient(to bottom, rgba(1,10,14,0.55) 0%, rgba(1,10,14,0.1) 20%, rgba(1,10,14,0.1) 50%, rgba(1,10,14,0.55) 100%)"
-          }} />
+        {/* Petals */}
+        <CherryBlossoms />
 
-          {/* Neon center glow */}
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 50% 22%, rgba(0,229,255,0.07) 0%, transparent 50%)" }} />
-
-          {/* Petals */}
-          <CherryBlossoms />
-
-          <div className="absolute top-1/2 left-0 right-0 h-px pointer-events-none"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent)" }} />
-
-          <div className="h-24 md:h-32" /> {/* nav spacer */}
-
+        {/* Content — all in normal flow, z-10 above bg */}
         <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8 relative z-10"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
@@ -435,7 +429,6 @@ export default function Home() {
 
         <motion.div className="flex flex-wrap gap-3 justify-center mb-16 relative z-10"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}>
-          {/* Dimmed down — no full bright cyan fill */}
           <a href="#work"
             className="px-6 py-3 font-mono text-xs uppercase tracking-widest border transition-all hover:bg-cyan-400/10"
             style={{ borderColor: "rgba(0,229,255,0.5)", color: "#00e5ff" }}>
@@ -473,8 +466,6 @@ export default function Home() {
             />
           </div>
         </motion.div>
-
-        </div>{/* end absolute content overlay */}
       </section>
 
       {/* Projects */}
