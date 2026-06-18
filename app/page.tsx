@@ -366,9 +366,9 @@ export default function Home() {
         position: "fixed", inset: 0, zIndex: 1,
         background: "linear-gradient(to bottom, rgba(1,10,14,0.45) 0%, rgba(1,10,14,0.0) 30%, rgba(1,10,14,0.0) 65%, rgba(1,10,14,0.7) 100%)",
       }} />
-      {/* Vertical center band — darkens the middle column so text is readable */}
+      {/* Vertical center band — second highest layer, above petals, below content */}
       <div className="pointer-events-none" style={{
-        position: "fixed", inset: 0, zIndex: 1,
+        position: "fixed", inset: 0, zIndex: 3,
         background: "linear-gradient(to right, transparent 0%, rgba(1,10,14,0.72) 22%, rgba(1,10,14,0.72) 78%, transparent 100%)",
       }} />
       <div className="pointer-events-none" style={{
