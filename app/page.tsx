@@ -36,8 +36,9 @@ function CherryBlossoms() {
         const ex = x + Math.cos(a2) * len;
         const ey = y + Math.sin(a2) * len;
 
-        // bezier control point — curves the branch organically
-        const cp = (Math.random() - 0.5) * len * 0.7;
+        // bezier control point — deep organic curl, more dramatic on thick branches
+        const curlFactor = w > 8 ? 1.1 : 0.75;
+        const cp = (Math.random() - 0.5) * len * curlFactor;
         const pa = a2 + Math.PI / 2;
         const cpx = (x + ex) / 2 + Math.cos(pa) * cp;
         const cpy = (y + ey) / 2 + Math.sin(pa) * cp;
@@ -52,41 +53,56 @@ function CherryBlossoms() {
         }
       }
 
-      // ── seed trees from corners + sides ──
-      branch(0,        0,        rnd(0.25, 0.5),               rnd(160,200), rnd(18,24), 0);
-      branch(20,       0,        rnd(0.5,  0.8),               rnd(110,150), rnd(10,14), 0);
-      branch(W,        0,        Math.PI - rnd(0.25,0.5),      rnd(160,200), rnd(18,24), 0);
-      branch(W-20,     0,        Math.PI - rnd(0.5,0.8),       rnd(110,150), rnd(10,14), 0);
-      branch(W * 0.5,  0,        Math.PI * 0.5,                rnd(90,130),  rnd(8,12),  0);
-      branch(0,        H * 0.15, rnd(-0.1, 0.3),               rnd(100,140), rnd(8,12),  0);
-      branch(0,        H * 0.35, rnd(-0.15,0.15),              rnd(70, 100), rnd(5,8),   0);
-      branch(0,        H * 0.52, rnd(-0.1, 0.1),               rnd(50, 80),  rnd(3,6),   0);
-      branch(W,        H * 0.15, Math.PI - rnd(-0.1,0.3),      rnd(100,140), rnd(8,12),  0);
-      branch(W,        H * 0.35, Math.PI - rnd(-0.15,0.15),    rnd(70, 100), rnd(5,8),   0);
-      branch(W,        H * 0.52, Math.PI - rnd(-0.1,0.1),      rnd(50, 80),  rnd(3,6),   0);
+      // ── seed trees — corners, sides, top-center ──
+      // Left trunk — massive root growing in from bottom-left corner
+      branch(0,        H,        rnd(-1.2,-0.9),               rnd(220,280), rnd(26,34), 0);
+      branch(0,        H * 0.7,  rnd(-0.4,-0.1),               rnd(170,220), rnd(18,24), 0);
+      branch(0,        H * 0.45, rnd(-0.2, 0.15),              rnd(130,170), rnd(12,16), 0);
+      branch(0,        H * 0.2,  rnd(-0.1, 0.25),              rnd(100,140), rnd(8,12),  0);
+      // Right trunk — mirrored
+      branch(W,        H,        Math.PI + rnd(0.9,1.2),       rnd(220,280), rnd(26,34), 0);
+      branch(W,        H * 0.7,  Math.PI + rnd(0.1,0.4),       rnd(170,220), rnd(18,24), 0);
+      branch(W,        H * 0.45, Math.PI + rnd(-0.15,0.2),     rnd(130,170), rnd(12,16), 0);
+      branch(W,        H * 0.2,  Math.PI + rnd(-0.25,0.1),     rnd(100,140), rnd(8,12),  0);
+      // Top center — hanging root dropping into the name gap
+      branch(W * 0.48, 0,        Math.PI * 0.5,                rnd(160,200), rnd(14,18), 0);
+      branch(W * 0.52, 0,        Math.PI * 0.5 + rnd(-0.2,0.2),rnd(120,160), rnd(10,14), 0);
+      // Top corners
+      branch(0,        0,        rnd(0.3, 0.6),                rnd(140,180), rnd(14,18), 0);
+      branch(W,        0,        Math.PI - rnd(0.3,0.6),       rnd(140,180), rnd(14,18), 0);
 
       ctx.clearRect(0, 0, W, H);
       ctx.lineCap  = "round";
       ctx.lineJoin = "round";
 
+      // Sort thick-first so thin branches render on top
+      segs.sort((a, b) => b.w - a.w);
+
       for (const s of segs) {
+        // Bleached ancient wood: pale bone/sand color, slightly warmer on thick parts
+        const t = Math.min(1, s.w / 28);
+        const rC = Math.floor(110 + t * 55);  // 110 thin → 165 thick
+        const gC = Math.floor(90  + t * 45);
+        const bC = Math.floor(70  + t * 30);
+        const alpha = Math.min(0.92, s.w * 0.035 + 0.42);
+
         ctx.beginPath();
         ctx.moveTo(s.x1, s.y1);
         ctx.quadraticCurveTo(s.cpx, s.cpy, s.x2, s.y2);
-        ctx.lineWidth    = s.w;
-        ctx.strokeStyle  = `rgba(90, 60, 40, ${Math.min(0.95, s.w * 0.05 + 0.55)})`;
+        ctx.lineWidth   = s.w;
+        ctx.strokeStyle = `rgba(${rC},${gC},${bC},${alpha})`;
         ctx.stroke();
 
-        // pink blossom clusters at thin tips
-        if (s.isTip && Math.random() < 0.55) {
+        // Pink blossom clusters at fine tips
+        if (s.isTip && Math.random() < 0.5) {
           const count = Math.floor(rnd(2, 6));
           for (let b = 0; b < count; b++) {
-            const bx = s.x2 + rnd(-10, 10);
-            const by = s.y2 + rnd(-10, 10);
-            const br = rnd(2.5, 5.5);
+            const bx = s.x2 + rnd(-12, 12);
+            const by = s.y2 + rnd(-12, 12);
+            const br = rnd(2.5, 6);
             ctx.beginPath();
             ctx.arc(bx, by, br, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${Math.floor(rnd(200,240))},${Math.floor(rnd(100,155))},${Math.floor(rnd(140,185))},${rnd(0.55,0.85)})`;
+            ctx.fillStyle = `rgba(${Math.floor(rnd(210,245))},${Math.floor(rnd(110,160))},${Math.floor(rnd(145,190))},${rnd(0.55,0.85)})`;
             ctx.fill();
           }
         }
@@ -465,14 +481,15 @@ export default function Home() {
           Berlin, Germany · Remote & Hybrid · Open to opportunities
         </motion.p>
 
-        <motion.div className="mb-4 relative z-10"
+        <motion.div className="mb-4 relative z-10 flex items-center justify-center"
+          style={{ gap: "clamp(2rem, 8vw, 7rem)" }}
           initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}>
           <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase glitch"
             data-text="MARKO" style={{ color: "#fff", letterSpacing: "0.08em" }}>
             MARKO
           </h1>
           <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase neon-cyan"
-            style={{ letterSpacing: "0.08em", marginTop: "-0.1em" }}>
+            style={{ letterSpacing: "0.08em" }}>
             RUDJIC
           </h1>
         </motion.div>
