@@ -379,6 +379,9 @@ export default function Home() {
       {/* Petals — fixed layer 2 */}
       <CherryBlossoms />
 
+      {/* All scrollable content — z-10 lifts entire block above fixed layers */}
+      <div className="relative" style={{ zIndex: 10 }}>
+
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b"
         style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
@@ -588,6 +591,7 @@ export default function Home() {
         © 2026 MARKO RUDJIC · GAMEPLAY &amp; TECHNICAL ANIMATOR · BERLIN · MR//SYSTEMS
       </footer>
 
+      </div>{/* end content wrapper */}
     </div>
   );
 }
