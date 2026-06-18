@@ -395,8 +395,13 @@ export default function Home() {
       <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
         style={{ paddingTop: "7rem", paddingBottom: "5rem" }}>
 
-        {/* Content — scrolls normally, z-10 above fixed layers */}
-        <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8 relative z-10"
+        {/* Dark readable band behind text */}
+        <div className="relative z-10 w-full flex flex-col items-center px-6 py-10 mb-6" style={{
+          background: "linear-gradient(to bottom, transparent 0%, rgba(1,10,14,0.55) 18%, rgba(1,10,14,0.55) 82%, transparent 100%)",
+          backdropFilter: "blur(2px)",
+        }}>
+
+        <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
           Berlin, Germany · Remote & Hybrid · Open to opportunities
@@ -450,6 +455,7 @@ export default function Home() {
             ARTSTATION
           </a>
         </motion.div>
+        </div>{/* end dark band */}
 
         {/* Demo reel */}
         <motion.div className="w-full max-w-4xl mx-auto bracket-corner relative z-10"
