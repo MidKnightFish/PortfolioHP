@@ -349,7 +349,14 @@ export default function Home() {
   const [activeSkill, setActiveSkill] = useState<number | null>(null);
 
   return (
-    <div className="text-white min-h-screen" style={{ background: "#010a0e" }}>
+    <div className="text-white min-h-screen" style={{
+      background: "#010a0e",
+      backgroundImage: "url('/hero-bg.png')",
+      backgroundAttachment: "fixed",
+      backgroundSize: "cover",
+      backgroundPosition: "center top",
+      backgroundRepeat: "no-repeat",
+    }}>
 
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b"
@@ -370,15 +377,7 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
-        style={{ paddingTop: "7rem", paddingBottom: "5rem", background: "#010a0e" }}>
-
-        {/* Background image — fixed behind all content */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "url('/hero-bg.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center 15%",
-          backgroundRepeat: "no-repeat",
-        }} />
+        style={{ paddingTop: "7rem", paddingBottom: "5rem" }}>
 
         {/* Overlays */}
         <div className="absolute inset-0 pointer-events-none" style={{
