@@ -481,7 +481,7 @@ export default function Home() {
       </section>
 
       {/* Projects */}
-      <section id="work" className="max-w-6xl mx-auto px-6 py-24">
+      <section id="work" className="max-w-6xl mx-auto px-6 py-24 relative" style={{ zIndex: 10 }}>
         <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
@@ -499,7 +499,7 @@ export default function Home() {
       </section>
 
       {/* Skills */}
-      <section id="skills" className="max-w-6xl mx-auto px-6 py-24">
+      <section id="skills" className="max-w-6xl mx-auto px-6 py-24 relative" style={{ zIndex: 10 }}>
         <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
@@ -529,7 +529,7 @@ export default function Home() {
       </section>
 
       {/* Experience */}
-      <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
+      <section id="experience" className="max-w-6xl mx-auto px-6 py-24 relative" style={{ zIndex: 10 }}>
         <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-1"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
@@ -545,7 +545,7 @@ export default function Home() {
       </section>
 
       {/* Contact */}
-      <section className="max-w-6xl mx-auto px-6 py-24 text-center relative">
+      <section className="max-w-6xl mx-auto px-6 py-24 text-center relative" style={{ zIndex: 10 }}>
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04) 0%, transparent 70%)" }} />
         <motion.p className="text-xs font-mono uppercase tracking-[0.3em] mb-4"
