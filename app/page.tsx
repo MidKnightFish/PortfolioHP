@@ -356,7 +356,7 @@ export default function Home() {
       background: "#010a0e",
       backgroundImage: "url('/hero-bg.png')",
       backgroundAttachment: "fixed",
-      backgroundSize: "auto 115vh",
+      backgroundSize: "80% 130vh",
       backgroundPosition: "center 0%",
       backgroundRepeat: "no-repeat",
     }}>
