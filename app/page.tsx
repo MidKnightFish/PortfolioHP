@@ -107,7 +107,10 @@ function CherryBlossoms() {
     return () => { cancelAnimationFrame(id); window.removeEventListener("resize", resize); };
   }, []);
 
-  return <canvas ref={petalRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.75 }} />;
+  return <canvas ref={petalRef} className="pointer-events-none" style={{
+    position: "fixed", inset: 0, width: "100%", height: "100%",
+    zIndex: 2, opacity: 0.75,
+  }} />;
 }
 
 // ── Data ─────────────────────────────────────────────────────────────
@@ -358,6 +361,19 @@ export default function Home() {
       backgroundRepeat: "no-repeat",
     }}>
 
+      {/* Fixed vignette — sits over bg image, under content, never scrolls */}
+      <div className="pointer-events-none" style={{
+        position: "fixed", inset: 0, zIndex: 1,
+        background: "linear-gradient(to bottom, rgba(1,10,14,0.45) 0%, rgba(1,10,14,0.0) 30%, rgba(1,10,14,0.0) 65%, rgba(1,10,14,0.7) 100%)",
+      }} />
+      <div className="pointer-events-none" style={{
+        position: "fixed", inset: 0, zIndex: 1,
+        background: "radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.06) 0%, transparent 55%)",
+      }} />
+
+      {/* Petals — fixed layer 2 */}
+      <CherryBlossoms />
+
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b"
         style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
@@ -379,17 +395,7 @@ export default function Home() {
       <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
         style={{ paddingTop: "7rem", paddingBottom: "5rem" }}>
 
-        {/* Overlays */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "linear-gradient(to bottom, rgba(1,10,14,0.5) 0%, rgba(1,10,14,0.08) 25%, rgba(1,10,14,0.08) 70%, rgba(1,10,14,0.7) 100%)"
-        }} />
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.07) 0%, transparent 55%)" }} />
-
-        {/* Petals */}
-        <CherryBlossoms />
-
-        {/* Content — all in normal flow, z-10 above bg */}
+        {/* Content — scrolls normally, z-10 above fixed layers */}
         <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8 relative z-10"
           style={{ color: "rgba(0,229,255,0.5)" }}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>
