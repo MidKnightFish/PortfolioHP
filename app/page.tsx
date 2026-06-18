@@ -46,10 +46,26 @@ function CherryBlossoms() {
     let id: number;
 
     const drawPetal = (p: ReturnType<typeof makePetal>) => {
+      const W = canvas.width, H = canvas.height;
+
+      // Horizontal: fade toward center — edges bright, middle transparent
+      const xNorm = Math.abs(p.x / W - 0.5) * 2;          // 0 at center, 1 at edges
+      const xFade = Math.pow(xNorm, 0.6);                   // ease — not too sharp
+
+      // Vertical: bottom petals glow up toward the image middle (H*0.5),
+      // then gently fade again above that.
+      const yNorm = p.y / H;                                // 0=top, 1=bottom
+      const yFade = yNorm < 0.5
+        ? yNorm * 2                                          // bottom→mid: 0 → 1
+        : 1 - (yNorm - 0.5) * 0.8;                          // mid→top: gentle fade
+
+      const posFactor = xFade * 0.65 + yFade * 0.35;
+      const finalAlpha = p.opacity * Math.max(0.05, posFactor);
+
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
-      ctx.globalAlpha = p.opacity;
+      ctx.globalAlpha = finalAlpha;
       ctx.beginPath();
       ctx.ellipse(0, 0, p.size, p.size * 0.45, 0, 0, Math.PI * 2);
       ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
