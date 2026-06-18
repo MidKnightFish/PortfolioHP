@@ -366,6 +366,11 @@ export default function Home() {
         position: "fixed", inset: 0, zIndex: 1,
         background: "linear-gradient(to bottom, rgba(1,10,14,0.45) 0%, rgba(1,10,14,0.0) 30%, rgba(1,10,14,0.0) 65%, rgba(1,10,14,0.7) 100%)",
       }} />
+      {/* Vertical center band — darkens the middle column so text is readable */}
+      <div className="pointer-events-none" style={{
+        position: "fixed", inset: 0, zIndex: 1,
+        background: "linear-gradient(to right, transparent 0%, rgba(1,10,14,0.72) 22%, rgba(1,10,14,0.72) 78%, transparent 100%)",
+      }} />
       <div className="pointer-events-none" style={{
         position: "fixed", inset: 0, zIndex: 1,
         background: "radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.06) 0%, transparent 55%)",
@@ -395,11 +400,7 @@ export default function Home() {
       <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
         style={{ paddingTop: "7rem", paddingBottom: "5rem" }}>
 
-        {/* Dark readable band behind text */}
-        <div className="relative z-10 w-full flex flex-col items-center px-6 py-10 mb-6" style={{
-          background: "linear-gradient(to bottom, transparent 0%, rgba(1,10,14,0.55) 18%, rgba(1,10,14,0.55) 82%, transparent 100%)",
-          backdropFilter: "blur(2px)",
-        }}>
+        <div className="relative z-10 w-full flex flex-col items-center px-6 py-10 mb-6">
 
         <motion.p className="text-xs uppercase tracking-[0.4em] font-mono mb-8"
           style={{ color: "rgba(0,229,255,0.5)" }}
