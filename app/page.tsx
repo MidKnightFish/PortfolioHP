@@ -167,7 +167,7 @@ const projects = [
     role: "Gameplay & Technical Animator",
     desc: "Currently in active development. Implementing animation systems in-engine, combat gameplay animations, rigging support for characters and creatures, facial animation, lipsync, and pipeline tooling.",
     tags: ["In Development", "Combat", "Pipeline", "UE5"],
-    link: null,
+    link: "https://store.steampowered.com/app/1256270/Kinstrife/",
     videoId: "c_mI0VHowsc",
     accent: "#c084fc",
     label: "IN DEV",
@@ -356,8 +356,8 @@ export default function Home() {
       background: "#010a0e",
       backgroundImage: "url('/hero-bg.png')",
       backgroundAttachment: "fixed",
-      backgroundSize: "cover",
-      backgroundPosition: "center top",
+      backgroundSize: "auto 115vh",
+      backgroundPosition: "center 0%",
       backgroundRepeat: "no-repeat",
     }}>
 
