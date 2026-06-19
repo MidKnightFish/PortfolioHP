@@ -393,6 +393,60 @@ function TimelineItem({ item, index }: { item: typeof experience[0]; index: numb
   );
 }
 
+// ── NavBar ────────────────────────────────────────────────────────────
+const navLinks = [
+  { label: "Work", href: "#work" },
+  { label: "Skills", href: "#skills" },
+  { label: "Timeline", href: "#experience" },
+  { label: "ArtStation", href: "https://www.artstation.com/markorudjic/profile", external: true },
+];
+
+function NavBar() {
+  const [open, setOpen] = useState(false);
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b"
+      style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
+      <div className="flex items-center justify-between px-5 py-4">
+        <span className="font-bold tracking-[0.3em] text-sm uppercase neon-cyan flicker">MR//PORTFOLIO</span>
+
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-widest" style={{ color: "rgba(0,229,255,0.6)" }}>
+          {navLinks.map(l => (
+            <a key={l.label} href={l.href} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}
+              className="hover:text-white transition-colors">{l.label}</a>
+          ))}
+          <a href="mailto:Marko.Rudjic@gmx.ch"
+            className="px-4 py-1.5 border font-mono text-xs transition-all hover:bg-cyan-400/10"
+            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>CONTACT</a>
+        </div>
+
+        {/* Mobile hamburger */}
+        <button className="md:hidden flex flex-col gap-1.5 p-1" onClick={() => setOpen(o => !o)} aria-label="Menu">
+          <span className="block w-5 h-px transition-all" style={{ background: "#00e5ff", transform: open ? "rotate(45deg) translate(3px,3px)" : "none" }} />
+          <span className="block w-5 h-px transition-all" style={{ background: "#00e5ff", opacity: open ? 0 : 1 }} />
+          <span className="block w-5 h-px transition-all" style={{ background: "#00e5ff", transform: open ? "rotate(-45deg) translate(3px,-3px)" : "none" }} />
+        </button>
+      </div>
+
+      {/* Mobile dropdown */}
+      <motion.div
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.25 }}
+        style={{ overflow: "hidden", borderTop: open ? "1px solid rgba(0,229,255,0.1)" : "none" }}
+      >
+        <div className="flex flex-col px-5 py-4 gap-4 font-mono text-xs uppercase tracking-widest" style={{ color: "rgba(0,229,255,0.7)" }}>
+          {navLinks.map(l => (
+            <a key={l.label} href={l.href} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}
+              className="hover:text-white transition-colors" onClick={() => setOpen(false)}>{l.label}</a>
+          ))}
+          <a href="mailto:Marko.Rudjic@gmx.ch" className="hover:text-white transition-colors" onClick={() => setOpen(false)}>Contact</a>
+        </div>
+      </motion.div>
+    </nav>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────
 export default function Home() {
   const [activeSkill, setActiveSkill] = useState<number | null>(null);
@@ -429,21 +483,7 @@ export default function Home() {
       <div className="relative" style={{ zIndex: 10 }}>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b"
-        style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
-        <span className="font-bold tracking-[0.3em] text-sm uppercase neon-cyan flicker">MR//PORTFOLIO</span>
-        <div className="flex items-center gap-6 text-xs font-mono uppercase tracking-widest" style={{ color: "rgba(0,229,255,0.6)" }}>
-          <a href="#work" className="hover:text-white transition-colors">Work</a>
-          <a href="#skills" className="hover:text-white transition-colors">Skills</a>
-          <a href="#experience" className="hover:text-white transition-colors">Timeline</a>
-          <a href="https://www.artstation.com/markorudjic/profile" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">ArtStation</a>
-          <a href="mailto:Marko.Rudjic@gmx.ch"
-            className="px-4 py-1.5 border font-mono text-xs transition-all hover:bg-cyan-400/10"
-            style={{ borderColor: "rgba(0,229,255,0.4)", color: "#00e5ff" }}>
-            CONTACT
-          </a>
-        </div>
-      </nav>
+      <NavBar />
 
       {/* Hero */}
       <section className="relative overflow-hidden flex flex-col items-center px-6 text-center"
