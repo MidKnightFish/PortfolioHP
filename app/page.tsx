@@ -175,12 +175,36 @@ const projects = [
 ];
 
 const experience = [
-  { years: "2026 – Now", role: "Gameplay & Technical Animator", studio: "Finitude", detail: "Remote · Berlin" },
-  { years: "2023 – 2026", role: "Gameplay & Technical Animator", studio: "Screen Juice Interactive GmbH", detail: "Remote · Berlin" },
-  { years: "2021", role: "3D Animator — Student", studio: "iAnimate.net", detail: "Game Workshop 1 & 2 · Combat & Body Mechanics" },
-  { years: "2020 – 2021", role: "Junior → 3D Animator", studio: "YAGER Development", detail: "Remote · Berlin" },
-  { years: "2020", role: "Intern 3D Animator", studio: "YAGER Development", detail: "Berlin" },
-  { years: "2017 – 2019", role: "Student — Digital Art & Animation", studio: "Games Academy Berlin", detail: "Focus: 3D Animation & Rigging" },
+  {
+    years: "2026 – Now", role: "Gameplay & Technical Animator", studio: "Finitude", detail: "Remote · Berlin",
+    hoverDetail: "Working on Kinstrife (UE5). Responsible for implementing animation systems in-engine, hand-keying combat gameplay animations, rigging support for characters & creatures, facial animation, lipsync integration, and building pipeline tooling for the team.",
+    tags: ["UE5", "Combat Anim", "Rigging", "Facial / Lipsync", "Pipeline"],
+  },
+  {
+    years: "2023 – 2026", role: "Gameplay & Technical Animator", studio: "Screen Juice Interactive GmbH", detail: "Remote · Berlin",
+    hoverDetail: "Full ownership of three playable characters — Ekku, Vekta and Flux — on Morbid Metal (Unity). Delivered hand-keyed locomotion, combat, hit reactions, death animations and complete rig pipelines from scratch for all player characters and creatures.",
+    tags: ["Unity", "Hand-keyed", "Locomotion", "Combat", "Rig Pipeline"],
+  },
+  {
+    years: "2021", role: "3D Animator — Student", studio: "iAnimate.net", detail: "Game Workshop 1 & 2 · Combat & Body Mechanics",
+    hoverDetail: "Completed iAnimate's Game Workshop 1 & 2, focused on game-ready locomotion cycles, combat mechanics, and body mechanics principles. Trained under industry professionals with real-time animation pipelines.",
+    tags: ["Game Anim", "Locomotion", "Combat", "Body Mechanics"],
+  },
+  {
+    years: "2020 – 2021", role: "Junior → 3D Animator", studio: "YAGER Development", detail: "Remote · Berlin",
+    hoverDetail: "Promoted from intern to animator on The Cycle: Frontier (UE4). Owned the quadruped Rattler creature, reworked FPP sniper & pistol locomotion, animated NPC vendors on Prospect Station, and built camera animation systems for the in-game vanity UI.",
+    tags: ["UE4", "Creature Anim", "FPP Locomotion", "NPC", "Camera Anim"],
+  },
+  {
+    years: "2020", role: "Intern 3D Animator", studio: "YAGER Development", detail: "Berlin",
+    hoverDetail: "Joined YAGER as an animation intern on The Cycle: Frontier. Supported the animation team with creature and character work, learning production pipelines in Unreal Engine 4 under senior animators.",
+    tags: ["UE4", "Creature Anim", "Production Pipeline"],
+  },
+  {
+    years: "2017 – 2019", role: "Student — Digital Art & Animation", studio: "Games Academy Berlin", detail: "Focus: 3D Animation & Rigging",
+    hoverDetail: "Three-year specialisation in 3D animation and character rigging at Games Academy Berlin. Studied Maya rigging, character animation fundamentals, game engine workflows, and graduated with a focus on real-time character pipelines.",
+    tags: ["Maya", "Character Rigging", "3D Animation", "Real-time Pipeline"],
+  },
 ];
 
 const techStack = [
@@ -325,23 +349,45 @@ function ProjectCard({ project, index }: { project: typeof projects[0]; index: n
 function TimelineItem({ item, index }: { item: typeof experience[0]; index: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
+  const [hovered, setHovered] = useState(false);
   return (
     <motion.div ref={ref}
       initial={{ opacity: 0, x: -30 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="flex gap-6 group"
+      className="flex gap-6 group cursor-pointer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="flex flex-col items-center">
         <div className="w-2 h-2 mt-2 border transition-colors duration-300 group-hover:bg-cyan-400"
           style={{ borderColor: "rgba(0,229,255,0.5)" }} />
         <div className="w-px flex-1 mt-2" style={{ background: "rgba(0,229,255,0.1)" }} />
       </div>
-      <div className="pb-8">
+      <div className="pb-8 flex-1">
         <p className="text-xs font-mono mb-1" style={{ color: "rgba(0,229,255,0.6)" }}>{item.years}</p>
         <p className="text-white font-bold tracking-wide">{item.role}</p>
         <p className="text-sm" style={{ color: "rgba(0,229,255,0.7)" }}>{item.studio}</p>
         <p className="text-xs font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{item.detail}</p>
+
+        {/* Hover detail panel */}
+        <motion.div
+          initial={false}
+          animate={{ height: hovered ? "auto" : 0, opacity: hovered ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ overflow: "hidden" }}
+        >
+          <div className="mt-3 p-4 border-l-2" style={{ borderColor: "rgba(0,229,255,0.3)", background: "rgba(0,229,255,0.04)" }}>
+            <p className="text-sm leading-relaxed mb-3" style={{ color: "rgba(255,255,255,0.65)" }}>
+              {item.hoverDetail}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {item.tags.map((tag) => (
+                <span key={tag} className="cyber-tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );
