@@ -411,15 +411,15 @@ export default function Home() {
           Berlin, Germany · Remote & Hybrid · Open to opportunities
         </motion.p>
 
-        <motion.div className="mb-4 relative z-10 flex items-center justify-center"
-          style={{ gap: "clamp(2rem, 8vw, 7rem)" }}
+        <motion.div className="mb-4 relative z-10 flex flex-col sm:flex-row items-center justify-center"
+          style={{ gap: "clamp(0.5rem, 4vw, 5rem)" }}
           initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}>
-          <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase glitch"
-            data-text="MARKO" style={{ color: "#fff", letterSpacing: "0.08em" }}>
+          <h1 className="font-bold leading-none uppercase neon-cyan"
+            style={{ fontSize: "clamp(3rem, 12vw, 8rem)", letterSpacing: "0.08em" }}>
             MARKO
           </h1>
-          <h1 className="text-7xl md:text-9xl font-bold leading-none uppercase neon-cyan"
-            style={{ letterSpacing: "0.08em" }}>
+          <h1 className="font-bold leading-none uppercase neon-cyan"
+            style={{ fontSize: "clamp(3rem, 12vw, 8rem)", letterSpacing: "0.08em" }}>
             RUDJIC
           </h1>
         </motion.div>
