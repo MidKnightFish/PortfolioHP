@@ -407,7 +407,8 @@ function NavBar() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b"
       style={{ background: "rgba(1,10,14,0.9)", borderColor: "rgba(0,229,255,0.1)", backdropFilter: "blur(12px)" }}>
       <div className="flex items-center justify-between px-5 py-4">
-        <span className="font-bold tracking-[0.3em] text-sm uppercase neon-cyan flicker">MR//PORTFOLIO</span>
+        <span className="hidden md:block font-bold tracking-[0.3em] text-sm uppercase neon-cyan flicker">MR//PORTFOLIO</span>
+        <span className="md:hidden font-bold tracking-[0.2em] text-sm uppercase neon-cyan flicker">MR//</span>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-widest" style={{ color: "rgba(0,229,255,0.6)" }}>
